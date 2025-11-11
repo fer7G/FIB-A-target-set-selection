@@ -33,3 +33,13 @@ difusioIC.dSYM/Contents/Resources/DWARF/difusioIC
 difusioIC
 a.out
 difusioIC.exe
+
+# Ejecutables
+difusioIC
+difusioLT
+greedyIC
+greedyLT
+localSearchIC
+localSearchLT
+metaheuristicIC
+metaheuristicLP
