@@ -43,6 +43,6 @@ int main () {
     auto duration = duration_cast<milliseconds>(stop - start);
 
     //printSet(S);
-    cout << "Nodos semilla seleccionados:" << S.size()<<endl;
-    cout << " en " << (double)duration.count()/1000 << " s"<<endl;
+    cout << "Selected seed nodes:" << S.size()<<endl;
+    cout << " in " << (double)duration.count()/1000 << " s"<<endl;
 }

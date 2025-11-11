@@ -185,13 +185,13 @@ int main() {
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
 
-    cout << "Nodos semilla seleccionados:" << endl;
+    cout << "Selected seed nodes:" << endl;
 /*     for (int node : S) {
         cout << node << " ";
     } */
     cout << S.size();
 
-    cout << " en " << (double)duration.count()/1000 << " s";
+    cout << " in " << (double)duration.count()/1000 << " s";
 
     cout << endl;
 }

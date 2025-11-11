@@ -108,7 +108,7 @@ int main() {
     auto duration = duration_cast<milliseconds>(stop - start);
 
     // Greedy solution output
-    cout << "Nodos semilla seleccionados en la solución inicial: " << S.size() << " en " << (double)duration.count()/1000 << " s" << endl;
+    cout << "Seed nodes selected in the initial solution: " << S.size() << " in " << (double)duration.count()/1000 << " s" << endl;
 
     // Set the parameters for Simulated Annealing
     int maxIter = 15000;
@@ -122,5 +122,5 @@ int main() {
     auto duration_SA = duration_cast<milliseconds>(stop_SA - start_SA);
 
     // Simulated Annealing solution output
-    cout << "Nodos semilla seleccionados por el simulated annealing: " << improved_S.size() << " en " << (double)duration_SA.count()/1000 << " s" << endl;
+    cout << "Seed nodes selected by simulated annealing: " << improved_S.size() << " in " << (double)duration_SA.count()/1000 << " s" << endl;
 }

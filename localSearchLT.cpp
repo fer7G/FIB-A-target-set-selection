@@ -74,7 +74,7 @@ int main() {
     auto duration = duration_cast<milliseconds>(stop - start);
 
     // Greedy solution output
-    cout << "Nodos semilla seleccionados en la solución inicial: " << S.size() << " en " << (double)duration.count()/1000 << " s" << endl;
+    cout << "Seed nodes selected in the initial solution: " << S.size() << " in " << (double)duration.count()/1000 << " s" << endl;
 
     start = high_resolution_clock::now();
     // Compute a localSearch approach from the greedy solution
@@ -83,5 +83,5 @@ int main() {
     duration = duration_cast<milliseconds>(stop - start);
 
     // Local search solution output
-    cout << "Nodos semilla seleccionados por la búsqueda local: " << S.size() << " en " << (double)duration.count()/1000 << " s" << endl;
+    cout << "Seed nodes selected by local search: " << S.size() << " in " << (double)duration.count()/1000 << " s" << endl;
 }
