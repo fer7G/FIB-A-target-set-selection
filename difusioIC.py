@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore")
 import random
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 # Struct for undirected graph
 class Graph:
@@ -15,8 +16,8 @@ class Graph:
         self.adjList[u].append(v)
         self.adjList[v].append(u)
 
-# Simulate IC diffusion process
-def simulateIC(G, p, S, nx_G, pos, node_colors):
+# Simulate IC diffusion process and return all states for animation
+def simulateIC(G, p, S, nx_G, pos):
     # Set of influenced nodes
     influenced = [False] * G.numNodes
     # Set of active nodes (per iteration)
@@ -24,6 +25,9 @@ def simulateIC(G, p, S, nx_G, pos, node_colors):
     
     # Number of steps
     t = 0
+    
+    # Store all states for animation
+    states = []
 
     # Order of nodes as stored in the graph, lo necesitamos
     node_order = list(nx_G.nodes())
@@ -33,16 +37,9 @@ def simulateIC(G, p, S, nx_G, pos, node_colors):
         influenced[vertex] = True
         active.append(vertex)
 
-    # Correct "order" for node color list, if we don't do this the nodes are painted wrong
-    i = 0
-    for node in node_order:
-        node_colors[i] = 'r' if influenced[node] else 'grey'
-        i += 1
-
-    # Paint the graph for the first time
-    nx.draw_networkx_nodes(nx_G, pos, nodelist=node_order, node_color=node_colors, cmap=plt.cm.Reds)
-    plt.draw()
-    plt.pause(1)
+    # Save initial state
+    node_colors = ['r' if influenced[node] else 'grey' for node in node_order]
+    states.append(node_colors.copy())
 
     # Continue until no more active nodes
     while active:
@@ -60,22 +57,15 @@ def simulateIC(G, p, S, nx_G, pos, node_colors):
                         influenced[neighbour] = True
                         active.append(neighbour)
 
-        # Checking again if we need to color new nodes
-        # Correct "order" for node color list, if we don't do this the nodes are painted wrong
-        i = 0
-        for node in node_order:
-            node_colors[i] = 'r' if influenced[node] else 'grey'
-            i += 1
-
-        nx.draw_networkx_nodes(nx_G, pos, nodelist=node_order, node_color=node_colors, cmap=plt.cm.Reds)
-        plt.draw()
-        plt.pause(1)
+        # Save current state
+        node_colors = ['r' if influenced[node] else 'grey' for node in node_order]
+        states.append(node_colors.copy())
 
     count = 0
     for node in influenced:
         if node:
             count += 1
-    return count, t, influenced
+    return count, t, influenced, states, node_order
 
 def readInput():
     n, m = map(int, input("Enter number of nodes and number of edges: ").split())
@@ -90,8 +80,50 @@ def readInput():
     S = list(map(int, input().split()))
     return G, p, S
 
+def createDefaultGraph():
+    # Example graph with 25 nodes
+    G = Graph(25)
+    
+    # Add edges to create an interesting graph structure
+    edges = [
+        # Central hub nodes (0-4)
+        (0, 1), (0, 2), (0, 3), (0, 4),
+        (1, 2), (1, 5), (1, 6),
+        (2, 7), (2, 8),
+        (3, 9), (3, 10),
+        (4, 11), (4, 12),
+        # Secondary connections
+        (5, 6), (5, 13), (6, 14),
+        (7, 8), (7, 15), (8, 16),
+        (9, 10), (9, 17), (10, 18),
+        (11, 12), (11, 19), (12, 20),
+        # Tertiary layer
+        (13, 14), (13, 21),
+        (15, 16), (15, 22),
+        (17, 18), (17, 23),
+        (19, 20), (19, 24),
+        # Cross connections
+        (14, 21), (16, 22), (18, 23), (20, 24),
+        (21, 22), (22, 23), (23, 24)
+    ]
+    
+    for u, v in edges:
+        G.addEdge(u, v)
+    
+    # Default probability
+    p = 0.7
+    
+    # Default seed nodes
+    S = [0, 1]
+    
+    return G, p, S
+
 if __name__ == "__main__":
-    G, p, S = readInput()
+    # Default: Use hardcoded example graph
+    G, p, S = createDefaultGraph()
+    
+    # Alternative: Read input from terminal (commented out)
+    # G, p, S = readInput()
 
     # Convert adjacency list to list of edges
     edge_list = []
@@ -105,16 +137,51 @@ if __name__ == "__main__":
     nx_G.add_edges_from(edge_list)
 
     # Draw the graph
-    pos = nx.spring_layout(nx_G)
+    pos = nx.spring_layout(nx_G, seed=42)  # seed for consistent layout
 
-    node_colors = ['grey' for _ in range(nx_G.number_of_nodes())]
-    nx.draw(nx_G, pos, with_labels=True)
-
-    # Run simulation and update the node colors
-    C, t, influenced = simulateIC(G, p, S, nx_G, pos, node_colors)
+    # Run simulation and get all states
+    C, t, influenced, states, node_order = simulateIC(G, p, S, nx_G, pos)
 
     print("Size of C:", C)
     print("Value of t:", t)
+    print("Generating GIF animation...")
 
+    # Create animation
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    def update(frame):
+        ax.clear()
+        ax.set_title(f"IC Diffusion Simulation - Step {frame}/{len(states)-1}", fontsize=16)
+        ax.axis('off')
+        
+        # Draw edges
+        nx.draw_networkx_edges(nx_G, pos, ax=ax, alpha=0.3)
+        
+        # Draw labels
+        nx.draw_networkx_labels(nx_G, pos, ax=ax, font_size=10)
+        
+        # Draw nodes with colors from current state
+        nx.draw_networkx_nodes(nx_G, pos, nodelist=node_order, 
+                              node_color=states[frame], 
+                              node_size=500, ax=ax)
+        
+        # Add legend
+        from matplotlib.patches import Patch
+        legend_elements = [
+            Patch(facecolor='red', label='Influenced'),
+            Patch(facecolor='grey', label='Not influenced')
+        ]
+        ax.legend(handles=legend_elements, loc='upper right')
+    
+    # Create animation
+    anim = FuncAnimation(fig, update, frames=len(states), interval=500, repeat=True)
+    
+    # Save as GIF
+    writer = PillowWriter(fps=2)
+    anim.save('ic_diffusion_simulation.gif', writer=writer)
+    
+    print("GIF saved as 'ic_diffusion_simulation.gif'")
+    
     # Show the final plot
-    plt.show(block=True)
+    update(len(states)-1)
+    plt.show()

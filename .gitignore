@@ -43,3 +43,6 @@ localSearchIC
 localSearchLT
 metaheuristicIC
 metaheuristicLP
+
+# Entorno virtual
+venv/
